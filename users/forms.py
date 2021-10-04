@@ -20,7 +20,7 @@ class RegisterForm(FlaskForm):
     password = PasswordField(validators=[Required(), Length(min=6, max=12, message="Password must be between 6 and 12 characters in length.")])
     confirm_password = PasswordField(validators=[Required(),
                                                  EqualTo('password', message='Both password fields must be equal.')])
-    pin_key = StringField(validators=[Required(), Length(min=32, message='Pin Key must be 32 characters long.')])
+    pin_key = StringField(validators=[Required(), Length(min=32, max=32, message='Pin Key must be 32 characters long.')])
 
     def validate_password(self, password):
         p = re.compile(r'(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[*?!%&/()=}{$@<>])')

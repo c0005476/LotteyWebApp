@@ -26,7 +26,7 @@ class RegisterForm(FlaskForm):
     pin_key = StringField(validators=[Required(), Length(min=32, max=32, message='Pin Key must be 32 characters long.')])
 
     def validate_password(self, password):
-        p = re.compile(r'(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[*?!%&/()=}{$@<>])')
+        p = re.compile(r'(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[]\[*?!%&/()=}{$@<>])')
         if not p.match(self.password.data):
             raise ValidationError("Password must contain at least 1 digit,"
                                   " 1 lowercase letter, 1 upper case letter and 1 special character.")

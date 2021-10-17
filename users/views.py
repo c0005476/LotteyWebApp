@@ -1,20 +1,27 @@
 # IMPORTS
 import logging
 from functools import wraps
-
+from datetime import datetime
+from flask_login import login_user, logout_user
+from werkzeug.security import check_password_hash
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import current_user
 
 from app import db
 from models import User
 from users.forms import RegisterForm
+from users.forms import LoginForm
 
 # CONFIG
 users_blueprint = Blueprint('users', __name__, template_folder='templates')
 
+user = User.query.first()
+draw_key = user.draw_key
 
 # VIEWS
 # view registration
+
+
 @users_blueprint.route('/register', methods=['GET', 'POST'])
 def register():
     # create signup form object
@@ -50,23 +57,47 @@ def register():
 
 
 # view user login
-@users_blueprint.route('/login')
+@users_blueprint.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template('login.html')
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+
+        if not user or not check_password_hash(user.password, form.password.data):
+            flash('Please check your login details and try again')
+            return render_template('login.html')
+
+        login_user(user)
+
+        user.last_logged_in = user.current_logged_in
+        user.current_logged_in = datetime.now()
+        db.session.add(user)
+        db.session.commit()
+
+        return profile()
+
+    return render_template('login.html', form=form)
 
 
 # view user profile
-@users_blueprint.route('/profile')
+@users_blueprint.route('/profile', methods=['GET', 'POST'])
 def profile():
-    return render_template('profile.html', name="PLACEHOLDER FOR FIRSTNAME")
+    return render_template('profile.html', name=user.firstname)
 
 
 # view user account
 @users_blueprint.route('/account')
 def account():
     return render_template('account.html',
-                           acc_no="PLACEHOLDER FOR USER ID",
-                           email="PLACEHOLDER FOR USER EMAIL",
-                           firstname="PLACEHOLDER FOR USER FIRSTNAME",
-                           lastname="PLACEHOLDER FOR USER LASTNAME",
-                           phone="PLACEHOLDER FOR USER PHONE")
+                           acc_no=user.id,
+                           email=user.email,
+                           firstname=user.firstname,
+                           lastname=user.lastname,
+                           phone=user.phone)
+
+
+@users_blueprint.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))

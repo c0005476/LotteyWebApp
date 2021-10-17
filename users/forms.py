@@ -2,6 +2,7 @@ import re
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField
 from wtforms.validators import Required, Email, ValidationError, Length, EqualTo
+from werkzeug.security import generate_password_hash
 
 
 def character_check(form, field):
@@ -39,4 +40,14 @@ class RegisterForm(FlaskForm):
     submit = SubmitField()
 
 
+class LoginForm(FlaskForm):
+    email = StringField(validators=[Required(), Email()])
+    password = PasswordField(validators=[Required()])
+    pin = StringField(validators=[Required(), Length(min=6, max=6, message='PIN must be 6 characters long')])
 
+    def validate_pin(self, pin):
+        # TODO write pin validation
+        pin_copy = pin
+        return ValidationError("Invalid Pin entered, please try again")
+
+    submit = SubmitField()

@@ -6,6 +6,7 @@ from flask_login import login_user, logout_user
 from werkzeug.security import check_password_hash
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import current_user
+import pyotp
 
 from app import db
 from models import User
@@ -66,14 +67,20 @@ def login():
 
         if not user or not check_password_hash(user.password, form.password.data):
             flash('Please check your login details and try again')
-            return render_template('login.html')
+            return render_template('login.html', form=form)
 
-        login_user(user)
+        if pyotp.TOTP(user.pin_key).verify(form.pin.data):
+            login_user(user)
 
-        user.last_logged_in = user.current_logged_in
-        user.current_logged_in = datetime.now()
-        db.session.add(user)
-        db.session.commit()
+            user.last_logged_in = user.current_logged_in
+            user.current_logged_in = datetime.now()
+            db.session.add(user)
+            db.session.commit()
+
+        else:
+            flash("You have supplied an invalid 2FA token!", "danger")
+
+
 
         return profile()
 

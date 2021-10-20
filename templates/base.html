@@ -29,31 +29,43 @@
                             <a href="{{ url_for('index') }}" class="navbar-item">
                                Home
                             </a>
-                                <a href="{{ url_for('users.profile') }}" class="navbar-item">
-                                    Profile
-                                </a>
+                                {% if current_user.is_authenticated %}
+                                    <a href="{{ url_for('users.profile') }}" class="navbar-item">
+                                        Profile
+                                    </a>
+                                {% endif %}
+                                {% if current_user.is_authenticated %}
                                 <a href="{{ url_for('lottery.lottery') }}" class="navbar-item">
                                     Lottery
                                 </a>
-
+                                {% endif %}
+                                {% if current_user.role == 'admin' %}
                                 <a href="{{ url_for('admin.admin') }}" class="navbar-item">
                                     Admin
                                 </a>
+                                {% endif %}
                                 {#TODO: DONE LOGIN#}
+                                {% if not current_user.is_authenticated %}
                                 <a href="{{ url_for('users.login') }}" class="navbar-item">
                                     Login
                                 </a>
+                                {% endif  %}
+                                {% if not current_user.is_authenticated %}
                                 <a href="{{ url_for('users.register') }}" class="navbar-item">
                                     Register
                                 </a>
+                                {% endif %}
+                                {% if current_user.is_authenticated %}
                                  <a href="{{ url_for('users.account') }}" class="navbar-item">
                                     Account
                                 </a>
+                                {% endif %}
                                 {#TODO: DONE LOGOUT#}
+                                {% if current_user.is_authenticated %}
                                 <a href="{{ url_for('users.logout') }}" class="navbar-item">
                                     Logout
                                 </a>
-
+                                {% endif %}
                        </div>
                     </div>
                 </div>

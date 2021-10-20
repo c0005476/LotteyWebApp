@@ -2,7 +2,7 @@
 import logging
 from functools import wraps
 from datetime import datetime
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user, login_required
 from werkzeug.security import check_password_hash
 from flask import Blueprint, render_template, flash, redirect, url_for, request, session
 from flask_login import current_user
@@ -104,12 +104,14 @@ def login():
 
 
 # view user profile
+@login_required
 @users_blueprint.route('/profile', methods=['GET', 'POST'])
 def profile():
     return render_template('profile.html', name=user.firstname)
 
 
 # view user account
+@login_required
 @users_blueprint.route('/account')
 def account():
     return render_template('account.html',
@@ -120,6 +122,7 @@ def account():
                            phone=user.phone)
 
 
+@login_required
 @users_blueprint.route('/logout')
 def logout():
     logout_user()

@@ -4,6 +4,7 @@ import logging
 from flask_login import login_required, current_user
 from flask import Blueprint, render_template, request, flash
 from sqlalchemy import desc
+from cryptography.fernet import Fernet
 from app import db
 from models import Draw, User
 
@@ -11,23 +12,27 @@ from models import Draw, User
 lottery_blueprint = Blueprint('lottery', __name__, template_folder='templates')
 
 
+def decrypt(data, draw_key):
+    return Fernet(draw_key).decrypt(data).decode("utf-8")
+
+
 # VIEWS
 # view lottery page
 @login_required
 @lottery_blueprint.route('/lottery')
 def lottery():
-    draws = Draw.query.order_by(desc('id')).all()
+    # draws = Draw.query.order_by(desc('id')).all()
+    #
+    # draws_copies = list(map(lambda x: copy.deepcopy(x), draws))
+    #
+    # decrypted_draws = []
+    #
+    # for d in draws_copies:
+    #     user = User.query.filter_by(id=current_user.id).first()
+    #     d.draw = e
+    #     decrypted_draws.append(d)
 
-    draws_copies = list(map(lambda x: copy.deepcopy(x), draws))
-
-    decrypted_draws = []
-
-    for d in draws_copies:
-        user = User.query.filter_by(username=d.username).first()
-        d.view_draw(user.draw_key)
-        decrypted_draws.append(d)
-
-    return render_template('lottery.html', draws=decrypted_draws)
+    return render_template('lottery.html')
 
 
 @login_required
@@ -67,7 +72,7 @@ def view_draws():
         decrypted_draws = []
 
         for d in draws_copies:
-            d.view_draw(current_user.draw_key)
+            d.draw = decrypt(d.draw, current_user.draw_key)
             decrypted_draws.append(d)
 
         return render_template('lottery.html', playable_draws=decrypted_draws)
@@ -91,7 +96,7 @@ def check_draws():
         decrypted_draws = []
 
         for d in draws_copies:
-            d.view_draw(current_user.draw_key)
+            d.draw = decrypt(d.draw, current_user.draw_key)
             decrypted_draws.append(d)
         return render_template('lottery.html', results=played_draws, played=True)
 

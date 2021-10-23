@@ -2,10 +2,9 @@
 import logging
 from functools import wraps
 from datetime import datetime
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from flask import Blueprint, render_template, flash, redirect, url_for, request, session
-from flask_login import current_user
 import pyotp
 
 from app import db
@@ -51,6 +50,8 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        logging.warning('SECURITY - User registration [%s, %s]', form.email.data, request.remote_addr)
+
         # sends user to login page
         return redirect(url_for('users.login'))
     # if request method is GET or form not valid re-render signup page
@@ -92,13 +93,11 @@ def login():
             user.current_logged_in = datetime.now()
             db.session.add(user)
             db.session.commit()
+            logging.warning('SECURITY - User login [%s, %s]', form.email.data, request.remote_addr)
+            return profile()
 
         else:
             flash("You have supplied an invalid 2FA token!", "danger")
-
-
-
-        return profile()
 
     return render_template('login.html', form=form)
 
@@ -125,5 +124,6 @@ def account():
 @login_required
 @users_blueprint.route('/logout')
 def logout():
+    logging.warning('SECURITY - Log out [%s, %s, %s]', current_user.id, current_user.email, request.remote_addr)
     logout_user()
     return redirect(url_for('index'))

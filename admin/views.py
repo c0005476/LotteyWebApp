@@ -1,10 +1,18 @@
 # IMPORTS
+import copy
+
 from flask import Blueprint, render_template, request, flash
 from app import db
+from cryptography.fernet import Fernet
 from models import User, Draw
+from flask_login import current_user
 
 # CONFIG
 admin_blueprint = Blueprint('admin', __name__, template_folder='templates')
+
+
+def decrypt(data, draw_key):
+    return Fernet(draw_key).decrypt(data).decode('utf-8')
 
 
 # VIEWS
@@ -46,7 +54,7 @@ def create_winning_draw():
     submitted_draw.strip()
 
     # create a new draw object with the form data.
-    new_winning_draw = Draw(user_id=0, draw=submitted_draw, win=True, round=round)
+    new_winning_draw = Draw(user_id=0, draw=submitted_draw, win=True, round=round, draw_key=current_user.draw_key)
 
     # add the new winning draw to the database
     db.session.add(new_winning_draw)
@@ -63,11 +71,13 @@ def view_winning_draw():
 
     # get winning draw from DB
     current_winning_draw = Draw.query.filter_by(win=True).first()
+    current_winning_draw_copy = current_winning_draw
+    current_winning_draw_copy.draw = decrypt(current_winning_draw_copy.draw, current_user.draw_key)
 
     # if a winning draw exists
     if current_winning_draw:
         # re-render admin page with current winning draw and lottery round
-        return render_template('admin.html', winning_draw=current_winning_draw, name="PLACEHOLDER FOR FIRSTNAME")
+        return render_template('admin.html', winning_draw=current_winning_draw_copy, name="PLACEHOLDER FOR FIRSTNAME")
 
     # if no winning draw exists, rerender admin page
     flash("No winning draw exists. Please add winning draw.")

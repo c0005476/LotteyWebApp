@@ -1,8 +1,9 @@
 # IMPORTS
 import logging
 import socket
-from flask import Flask, render_template
-from flask_login import LoginManager
+from functools import wraps
+from flask import Flask, render_template, request
+from flask_login import LoginManager, current_user
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -32,6 +33,21 @@ app.config['SECRET_KEY'] = 'LongAndRandomSecretKey'
 # initialise database
 db = SQLAlchemy(app)
 
+# FUNCTIONS
+def requires_roles(*roles):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if current_user.role not in roles:
+                logging.warning('SECURITY - Unauthorised access attempt [%s, %s, %s]',
+                                current_user.id,
+                                current_user.email,
+                                current_user.role,
+                                request.remote_addr)
+                return render_template('403.html')
+            return f(*args, **kwargs)
+        return wrapped
+    return wrapper
 
 # HOME PAGE VIEW
 @app.route('/')
@@ -82,7 +98,6 @@ if __name__ == "__main__":
     @login_manager.user_loader
     def load_user(id):
         return User.query.get(int(id))
-
 
 
     # BLUEPRINTS

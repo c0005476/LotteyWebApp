@@ -2,10 +2,10 @@
 import copy
 
 from flask import Blueprint, render_template, request, flash
-from app import db
+from app import db, requires_roles
 from cryptography.fernet import Fernet
 from models import User, Draw
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 # CONFIG
 admin_blueprint = Blueprint('admin', __name__, template_folder='templates')
@@ -17,12 +17,16 @@ def decrypt(data, draw_key):
 
 # VIEWS
 # view admin homepage
+@login_required
+@requires_roles('admin')
 @admin_blueprint.route('/admin')
 def admin():
     return render_template('admin.html', name="PLACEHOLDER FOR FIRSTNAME")
 
 
 # view all registered users
+@login_required
+@requires_roles('admin')
 @admin_blueprint.route('/view_all_users', methods=['POST'])
 def view_all_users():
     return render_template('admin.html', name="PLACEHOLDER FOR FIRSTNAME",
@@ -30,6 +34,8 @@ def view_all_users():
 
 
 # create a new winning draw
+@login_required
+@requires_roles('admin')
 @admin_blueprint.route('/create_winning_draw', methods=['POST'])
 def create_winning_draw():
 
@@ -66,6 +72,8 @@ def create_winning_draw():
 
 
 # view current winning draw
+@login_required
+@requires_roles('admin')
 @admin_blueprint.route('/view_winning_draw', methods=['POST'])
 def view_winning_draw():
 
@@ -85,6 +93,8 @@ def view_winning_draw():
 
 
 # view lottery results and winners
+@login_required
+@requires_roles('admin')
 @admin_blueprint.route('/run_lottery', methods=['POST'])
 def run_lottery():
 
@@ -147,6 +157,8 @@ def run_lottery():
 
 
 # view last 10 log entries
+@login_required
+@requires_roles('admin')
 @admin_blueprint.route('/logs', methods=['POST'])
 def logs():
     with open("lottery.log", "r") as f:

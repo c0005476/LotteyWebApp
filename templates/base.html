@@ -39,7 +39,7 @@
                                     Lottery
                                 </a>
                                 {% endif %}
-                                {% if current_user.role == 'admin' %}
+                                {% if current_user.is_authenticated and current_user.role == 'admin' %}
                                 <a href="{{ url_for('admin.admin') }}" class="navbar-item">
                                     Admin
                                 </a>

@@ -94,7 +94,11 @@ def login():
             db.session.add(user)
             db.session.commit()
             logging.warning('SECURITY - User login [%s, %s]', form.email.data, request.remote_addr)
-            return profile()
+
+            if current_user.role == 'admin':
+                return redirect(url_for('admin.admin'))
+            else:
+                return profile()
 
         else:
             flash("You have supplied an invalid 2FA token!", "danger")

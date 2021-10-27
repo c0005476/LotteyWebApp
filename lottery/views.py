@@ -116,7 +116,7 @@ def check_draws():
 @lottery_blueprint.route('/play_again', methods=['POST'])
 def play_again():
     delete_played = Draw.__table__.delete().where(Draw.played,
-                                                  id=current_user.id)  # TODO:  Done delete played draws for current user only
+                                                  user_id=current_user.id)  # TODO:  Done delete played draws for current user only
     db.session.execute(delete_played)
     db.session.commit()
 

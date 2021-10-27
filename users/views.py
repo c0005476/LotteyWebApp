@@ -76,10 +76,13 @@ def login():
 
         if not user or not check_password_hash(user.password, form.password.data):
             if session['logins'] == 3:
+                logging.warning('SECURITY - Invalid Login attempt 3 [%s, %s]', form.email.data, request.remote_addr)
                 flash('Number of incorrect logins exceeded')
             elif session['logins'] == 2:
+                logging.warning('SECURITY - Invalid Login attempt 2 [%s, %s]', form.email.data, request.remote_addr)
                 flash('Please check your login details and try again. 1 login attempt remaining')
             else:
+                logging.warning('SECURITY - Invalid Login attempt 1 [%s, %s]', form.email.data, request.remote_addr)
                 flash('Please check your login details and try again. 2 login attempts remaining')
 
             return render_template('login.html', form=form)
